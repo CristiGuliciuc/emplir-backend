@@ -2,49 +2,23 @@ const express = require('express');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const CosmosClient = require('@azure/cosmos').CosmosClient;
+const databaseFunctionality = require("./database-functionality");
 require("dotenv").config();
 
-const HOST = "0.0.0.0";
-const PORT = process.env.PORT;
-
-const app = express();
+const HOST = 'localhost';
+const PORT = process.env.PORT || 3000
 
 var corsOptions = {
   origin: "*",
   optionsSuccessStatus: 200,
 };
 
+const app = express()
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-
-// set db client
-const endpoint = process.env.COSMOS_DB_ENDPOINT;
-const key = process.env.COSMOS_DB_KEY;
-
-const databaseId = process.env.COSMOS_DB_DATABASE
-const containerId = process.env.COSMOS_DB_CONTAINER
-const partitionKey = { kind: 'Hash', paths: ['/partitionKey'] }
-
-const options = {
-      endpoint: endpoint,
-      key: key,
-      userAgentSuffix: 'CosmosDBEmplir'
-    };
-
-const client = new CosmosClient(options)
-
-/**
- * Create the database if it does not exist
- */
-async function createDatabase() {
-  const { database } = await client.databases.createIfNotExists({
-    id: databaseId
-  })
-  console.log(`Created database:\n${database.id}\n`)
-}
 
 /**
  * Exit the app with a prompt
@@ -58,7 +32,7 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0))
 }
 
-createDatabase()
+databaseFunctionality.createDatabase()
   .then(() => {
     exit(`Database setup successfully`)
   })
@@ -66,10 +40,14 @@ createDatabase()
     exit(`Completed with error ${JSON.stringify(error)}`)
   })
 
-app.get("/", (req, res) => {
-  res.send("Hello User!\n");
-});
+app.get('/', (req, res) => {
+  databaseFunctionality.readDatabase().then((results) => {
+    res.send(`Database ${JSON.stringify(results.id)} setup successfully`);
+  }).catch((error) => {
+    res.send(`Database error: ${error}`);
+  });
+})
 
 app.listen(PORT, () => {
-  console.log(`Example app listening at http://${HOST}:${PORT}`);
-});
+  console.log(`Example app listening at http://${HOST}:${PORT}`)
+})

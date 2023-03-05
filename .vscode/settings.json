@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/cbbc6207-05fe-4abd-a0af-0099c26a83b8/resourceGroups/emplir-backend/providers/Microsoft.Web/sites/emplir-backend",
+    "appService.deploySubpath": "."
+}
