@@ -53,6 +53,8 @@ app.get('/', (req, res) => {
 
 require("./routes/forms.routes")(app);
 
+require("./routes/user.routes")(app);
+
 app.listen(PORT, () => {
   console.log(`Example app listening at http://${HOST}:${PORT}`)
 })
