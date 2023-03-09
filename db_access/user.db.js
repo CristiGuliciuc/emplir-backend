@@ -1,5 +1,5 @@
 const CosmosClient = require('@azure/cosmos').CosmosClient;
-const databaseConfig = require("../database-config");
+const databaseConfig = require("../config/database.config");
 
 const Database = require("./setup.db");
 

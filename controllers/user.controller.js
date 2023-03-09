@@ -66,7 +66,6 @@ exports.login = async (req, res) => {
     const user = await User.getUser(emailAddress);
     if(! user)
       return res.status(400).json({accessToken: null, msg: "There's no account for this email" });
-    console.log(user);
     if(password != user.password)
       return res.status(400).json({ accessToken: null, msg: "Incorrect password" });
     // user data that will be sent to frontend

@@ -8,7 +8,7 @@ config.database = {
 }
 
 config.usersContainer = {
-  id: 'USERS'
+  id: 'Users'
 }
 
 module.exports = config;
