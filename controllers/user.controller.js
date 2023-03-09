@@ -1,8 +1,9 @@
+const jwt = require("jsonwebtoken");
 const User = require("../db_access/user.db");
 const { v4: uuidv4 } = require('uuid');
 
 exports.create = async (req, res) => {
-    try {
+  try {
       const {
         accountType,
         accountName,
@@ -51,7 +52,59 @@ exports.create = async (req, res) => {
      
       await User.createUserItem(newUser);
       return res.status(201).send(newUser.userId.toString());
-    } catch (err) {
+  } catch (err) {
       return res.status(500).send({ message: err.message });
-    }
-  };
+  }
+};
+
+exports.login = async (req, res) => {
+  try{
+    const {
+      emailAddress,
+      password
+    } = req.body;
+    const user = await User.getUser(emailAddress);
+    if(! user)
+      return res.status(400).json({accessToken: null, msg: "There's no account for this email" });
+    console.log(user);
+    if(password != user.password)
+      return res.status(400).json({ accessToken: null, msg: "Incorrect password" });
+    // user data that will be sent to frontend
+    const tokenUser = {id: user.userId};
+    let accessToken = jwt.sign(tokenUser, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
+    let refreshToken = jwt.sign(tokenUser, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: "7d",
+    });
+    return res.status(201).json({
+      accessToken: accessToken,
+      refreshToken: refreshToken
+    });
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+// Refresh token controller - used when access token expires
+exports.refreshToken = (req, res) => {
+  try {
+    const refreshToken = req.cookies.refresh;
+    if (!refreshToken)
+      return res.status(403).json({ msg: "You must log in or register" });
+  
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err)
+        return res.status(403).json({ msg: "You must log in or register" });
+    
+      const tokenUser = { id: user.userId };
+      const accessToken = jwt.sign(tokenUser, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+    
+      return res.status(201).json({ accessToken: accessToken });
+    });
+  } catch (err) {
+    return res.status(500).json({ msg: err.message });
+  }
+};

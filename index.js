@@ -7,7 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerConfig = require('./config/swagger.config')
 require("dotenv").config();
 
-const HOST = process.env.HOST;
+const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
 
 const swaggerSpec = swaggerJSDoc(swaggerConfig.optionsSwagger);

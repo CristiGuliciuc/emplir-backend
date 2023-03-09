@@ -64,7 +64,6 @@ try{
     .items.query(querySpec)
     .fetchAll()
     
-    console.log(JSON.stringify(results) + " " + results.length)
     if(results.length > 0) 
         return true;
     else return false;
@@ -73,8 +72,65 @@ try{
   }
 }
 
+async function getUser(email) {
+    try{
+        console.log(`Querying container:\n${containerId} to find account with email ${email}`)
+        const querySpec = {
+            query : `SELECT {
+                "userId": r.userId,
+                "emailAddress": r.emailAddress,
+                "password": r.password
+            } FROM root r WHERE r.emailAddress = @email`,
+            parameters: [
+                {
+                    name: '@email',
+                    value: email
+                }
+            ]
+        }
+        const { resources: results } = await client
+        .database(Database.databaseId)
+        .container(containerId)
+        .items.query(querySpec)
+        .fetchAll()
+        
+        if(results.length > 0)
+            return results[0]['$1'];
+        else return null;
+
+    } catch (err) {
+        console.log("In user.getUser: " + err.message);
+    }
+}
+
+// async function getPassword(email) {
+//     try{
+//         console.log(`Querying container:\n${containerId} to find password for account with email ${email}`)
+//         const querySpec = {
+//             query: 'SELECT VALUE r.password FROM root r WHERE r.emailAddress = @email',
+//             parameters: [
+//                 {
+//                     name: '@email',
+//                     value: email
+//                 }
+//             ]
+//         }
+//         const { resources: results } = await client
+//         .database(Database.databaseId)
+//         .container(containerId)
+//         .items.query(querySpec)
+//         .fetchAll()
+//         console.log("in getPassword: " + results);
+//         return results[0];
+//     } catch (err) {
+//         console.log("In user.getPassword: " + err.message);
+//     }
+//     }
+
   module.exports = {
     createUserItem,
     emailExists,
-    accountNameExists
+    accountNameExists,
+    // getPassword,
+    getUser
 };
