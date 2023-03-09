@@ -4,7 +4,8 @@
   "description": "Backend side of emplir application",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node --watch index.js"
   },
   "repository": {
     "type": "git",

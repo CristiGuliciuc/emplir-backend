@@ -4,11 +4,10 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const databaseFunctionality = require("./database-functionality");
-const swaggerConfig = require('./swagger-config')
+const swaggerConfig = require('./config/swagger.config')
 require("dotenv").config();
 
-const HOST = 'localhost';
+const HOST = process.env.HOST;
 const PORT = process.env.PORT || 3000;
 
 const swaggerSpec = swaggerJSDoc(swaggerConfig.optionsSwagger);
@@ -38,15 +37,6 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0))
 }
 
-databaseFunctionality.createDatabase()
-  .then(() => {
-    exit(`Database setup successfully`)
-  })
-  .catch(error => {
-    exit(`Completed with error ${JSON.stringify(error)}`)
-  })
-
-
   /**
    *  @swagger
    * /:
@@ -61,13 +51,7 @@ app.get('/', (req, res) => {
   res.send('Hello User!');
 })
 
-app.get('/checkDatabaseConnection', (req, res) => {
-  databaseFunctionality.readDatabase().then((results) => {
-    res.send(`Database ${JSON.stringify(results.id)} setup successfully`);
-  }).catch((error) => {
-    res.send(`Database error: ${error}`);
-  });
-})
+require("./routes/forms.routes")(app);
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://${HOST}:${PORT}`)
