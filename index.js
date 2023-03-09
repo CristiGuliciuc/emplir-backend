@@ -7,7 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerConfig = require('./config/swagger.config')
 require("dotenv").config();
 
-const HOST = process.env.HOST;
+const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
 
 const swaggerSpec = swaggerJSDoc(swaggerConfig.optionsSwagger);
@@ -52,6 +52,8 @@ app.get('/', (req, res) => {
 })
 
 require("./routes/forms.routes")(app);
+
+require("./routes/user.routes")(app);
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://${HOST}:${PORT}`)
