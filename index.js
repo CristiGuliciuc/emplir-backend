@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const databaseFunctionality = require("./database-functionality");
 require("dotenv").config();
 
-const HOST = 'localhost';
+const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000
 
 var corsOptions = {
