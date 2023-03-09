@@ -2,11 +2,15 @@ const express = require('express');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const databaseFunctionality = require("./database-functionality");
+const swaggerJSDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const swaggerConfig = require('./config/swagger.config')
 require("dotenv").config();
 
-const HOST = 'localhost';
-const PORT = process.env.PORT || 3000
+const HOST = process.env.HOST;
+const PORT = process.env.PORT || 3000;
+
+const swaggerSpec = swaggerJSDoc(swaggerConfig.optionsSwagger);
 
 var corsOptions = {
   origin: "*",
@@ -19,6 +23,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /**
  * Exit the app with a prompt
@@ -32,21 +37,21 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0))
 }
 
-databaseFunctionality.createDatabase()
-  .then(() => {
-    exit(`Database setup successfully`)
-  })
-  .catch(error => {
-    exit(`Completed with error ${JSON.stringify(error)}`)
-  })
-
+  /**
+   *  @swagger
+   * /:
+   *  get:
+   *    summary: This api is used to check if get method is working or not
+   *    description: This api is used to check if get method is working or not
+   *    responses:
+   *      200:
+   *          description: To test Get method
+   */
 app.get('/', (req, res) => {
-  databaseFunctionality.readDatabase().then((results) => {
-    res.send(`Database ${JSON.stringify(results.id)} setup successfully`);
-  }).catch((error) => {
-    res.send(`Database error: ${error}`);
-  });
+  res.send('Hello User!');
 })
+
+require("./routes/forms.routes")(app);
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://${HOST}:${PORT}`)
