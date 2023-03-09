@@ -103,34 +103,9 @@ async function getUser(email) {
     }
 }
 
-// async function getPassword(email) {
-//     try{
-//         console.log(`Querying container:\n${containerId} to find password for account with email ${email}`)
-//         const querySpec = {
-//             query: 'SELECT VALUE r.password FROM root r WHERE r.emailAddress = @email',
-//             parameters: [
-//                 {
-//                     name: '@email',
-//                     value: email
-//                 }
-//             ]
-//         }
-//         const { resources: results } = await client
-//         .database(Database.databaseId)
-//         .container(containerId)
-//         .items.query(querySpec)
-//         .fetchAll()
-//         console.log("in getPassword: " + results);
-//         return results[0];
-//     } catch (err) {
-//         console.log("In user.getPassword: " + err.message);
-//     }
-//     }
-
-  module.exports = {
+module.exports = {
     createUserItem,
     emailExists,
     accountNameExists,
-    // getPassword,
     getUser
 };
