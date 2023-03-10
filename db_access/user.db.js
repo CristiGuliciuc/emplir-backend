@@ -103,9 +103,43 @@ async function getUser(email) {
     }
 }
 
+async function increaseCountCreatedForms(userId) {
+    try{
+        console.log(`Querying container:\n${containerId} to find countCreatedForms for user with id ${userId}`)
+        const querySpec = {
+            query : `SELECT * FROM root r WHERE r.userId = @userId`,
+            parameters: [
+                {
+                    name: '@userId',
+                    value: userId
+                }
+            ]
+        }
+        const { resources: results } = await client
+        .database(Database.databaseId)
+        .container(containerId)
+        .items.query(querySpec)
+        .fetchAll()
+
+        if(results.length > 0)
+        {
+            console.log(`Querying container:\n${containerId} to increase countCreatedForms for user with id ${userId}`)
+            results[0].countCreatedForms +=1;
+            const { item } = await client
+            .database(Database.databaseId)
+            .container(containerId)
+            .item(results[0].userId, results[0].partitionKey)
+            .replace(results[0])
+        }
+    } catch (err) {
+        console.log("In user.increaseUserCountCreatedForms: " + err.message);
+    }
+}
+
 module.exports = {
     createUserItem,
     emailExists,
     accountNameExists,
-    getUser
+    getUser,
+    increaseCountCreatedForms
 };

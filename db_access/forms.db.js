@@ -3,10 +3,20 @@ const databaseConfig = require("../config/database.config");
 
 const Database = require("./setup.db");
 
+// !!! should also add a FORMS container
 const containerId = databaseConfig.usersContainer.id
 const partitionKey = { kind: 'Hash', paths: ['/userId'] }
 
- const client = Database.client;
+const client = Database.client;
+
+async function createFormItem(itemBody) {
+    const { item } = await client
+      .database(Database.databaseId)
+      .container(containerId)
+      .items.upsert(itemBody)
+    // should add it to both forms and users container; for now it is only in the users container
+    console.log(`Created form with id:\n${itemBody.formId}\n`)
+}
 
 async function findAll(userId) {
     const querySpec = {
@@ -30,5 +40,6 @@ async function findAll(userId) {
 }
 
 module.exports = {
-    findAll
+    findAll,
+    createFormItem
 };
