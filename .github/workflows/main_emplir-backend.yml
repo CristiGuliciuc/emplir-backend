@@ -10,15 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  remove-old-artifacts:
-    runs-on: windows-latest
-    timeout-minutes: 10
-    steps:
-      - name: 'Delete old artifacts'
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: node-app
-          
+
   build:
     runs-on: windows-latest
 
