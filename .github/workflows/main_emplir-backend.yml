@@ -10,6 +10,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  remove-old-artifacts:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: 'Delete old artifacts'
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: node-app
+          
   build:
     runs-on: windows-latest
 
@@ -54,12 +63,3 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EEECF381884C4D21A36E42DF577BD3A6 }}
           package: .
-
-  remove-old-artifacts:
-    runs-on: windows-latest
-    timeout-minutes: 10
-    steps:
-      - name: 'Delete old artifacts'
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: node-app
