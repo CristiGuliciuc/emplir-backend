@@ -19,24 +19,30 @@ async function createFormItem(itemBody) {
 }
 
 async function findAll(userId) {
-    const querySpec = {
-        query: `SELECT f.formId
-                       ,f.title
-                       ,f.dataRetentionPeriod
-                       ,f.submissionsCount 
-                FROM USERS u join f IN u.Forms
-                WHERE u.userId = @userId`,
-        parameters: [
-            { name: '@userId', value: `${userId}` }
-        ]
-    }
+    try {
+        const querySpec = {
+            query: `SELECT { 
+            "formId": r.formId,
+            "title": r.title,
+            "dataRetentionPeriod": r.dataRetentionPeriod,
+            "submissionsCount": r.submissionsCount 
+        } FROM root r WHERE r.userId = @userId and r.type = "template"`,
+            parameters: [
+                { name: '@userId', value: `${userId}` }
+            ]
+        } 
+        const { resources: results } = await client
+            .database(Database.databaseId)
+            .container(containerId)
+            .items.query(querySpec)
+            .fetchAll()
 
-    const { resources: results } = await client
-        .database(Database.databaseId)
-        .container(containerId)
-        .items.query(querySpec)
-        .fetchAll()
-    return results;
+        if (results.length > 0)
+            return results;
+        else return null;
+    } catch (err) {
+        console.log("In forms.db: " + err.message);
+    }
 }
 
 module.exports = {
