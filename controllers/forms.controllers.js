@@ -48,7 +48,7 @@ exports.create = async (req, res) => {
     const newForm = {
       type: "form",
       formId: uuidv4(),
-      userId : req.user.id,
+      userId : req.userId,
       title,
       dataRetentionPeriod,
       fields,
@@ -72,6 +72,19 @@ exports.findAll = async (req, res) => {
     let forms = {};
     const userId = req.query.userId;
     forms = await Forms.findAll(userId);
+    return res.status(200).send(forms);
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+//Get form by userId and formId
+exports.findOne = async (req, res) => {
+  try {
+    let forms = {};
+    const userId = req.query.userId;
+    const formId = req.query.formId;
+    forms = await Forms.findOne(userId, formId);
     return res.status(200).send(forms);
   } catch (err) {
     return res.status(500).send({ message: err.message });

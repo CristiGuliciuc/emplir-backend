@@ -2,6 +2,10 @@ const Forms = require("../controllers/forms.controllers");
 const auth = require("../middlewares/authJwt")
 
 module.exports = (app) => {
-    app.get("/forms/getAll", auth, Forms.findAll);
-    app.post("/forms/create/", auth, Forms.create);
+    // Endpoint for retrieving all forms
+    app.get("/forms/getAll/", Forms.findAll);
+    // Endpoint for retrieving a single form
+    app.get("/forms/getOne/", Forms.findOne);
+    // Endpoint for creating a new form
+    app.post("/forms/create/", Forms.create);
 };
