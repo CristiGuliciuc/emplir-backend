@@ -3,8 +3,8 @@ const databaseConfig = require("../config/database.config");
 
 const Database = require("./setup.db");
 
-const containerId = databaseConfig.usersContainer.id
-const partitionKey = { kind: 'Hash', paths: ['/userId'] }
+const userContainerId = databaseConfig.usersContainer.id
+const usersContainerPartitionKey = { kind: 'Hash', paths: ['/userId'] }
 
  const client = Database.client;
 
@@ -15,14 +15,14 @@ const partitionKey = { kind: 'Hash', paths: ['/userId'] }
 async function createUserItem(itemBody) {
     const { item } = await client
       .database(Database.databaseId)
-      .container(containerId)
+      .container(userContainerId)
       .items.upsert(itemBody)
     console.log(`Created user with id:\n${itemBody.userId}\n`)
 }
 
 async function emailExists(email) {
 try{
-    console.log(`Querying container:\n${containerId} to find email ${email}`)
+    console.log(`Querying container:\n${userContainerId} to find email ${email}`)
     const querySpec = {
         query: 'SELECT VALUE r.emailAddress FROM root r WHERE r.emailAddress = @email',
         parameters: [
@@ -34,7 +34,7 @@ try{
     }
     const { resources: results } = await client
     .database(Database.databaseId)
-    .container(containerId)
+    .container(userContainerId)
     .items.query(querySpec)
     .fetchAll()
     
@@ -48,7 +48,7 @@ try{
 
 async function accountNameExists(accountName) {
 try{
-    console.log(`Querying container: ${containerId} to find accountName ${accountName}`)
+    console.log(`Querying container: ${userContainerId} to find accountName ${accountName}`)
     const querySpec = {
         query: 'SELECT VALUE r.accountName FROM root r WHERE r.accountName = @accountName',
         parameters: [
@@ -60,7 +60,7 @@ try{
     }
     const { resources: results } = await client
     .database(Database.databaseId)
-    .container(containerId)
+    .container(userContainerId)
     .items.query(querySpec)
     .fetchAll()
     
@@ -74,7 +74,7 @@ try{
 
 async function getUser(email) {
     try{
-        console.log(`Querying container:\n${containerId} to find account with email ${email}`)
+        console.log(`Querying container:\n${userContainerId} to find account with email ${email}`)
         const querySpec = {
             query : `SELECT {
                 "userId": r.userId,
@@ -90,7 +90,7 @@ async function getUser(email) {
         }
         const { resources: results } = await client
         .database(Database.databaseId)
-        .container(containerId)
+        .container(userContainerId)
         .items.query(querySpec)
         .fetchAll()
         
@@ -105,7 +105,7 @@ async function getUser(email) {
 
 async function increaseCountCreatedForms(userId) {
     try{
-        console.log(`Querying container:\n${containerId} to find countCreatedForms for user with id ${userId}`)
+        console.log(`Querying container:\n${userContainerId} to find countCreatedForms for user with id ${userId}`)
         const querySpec = {
             query : `SELECT * FROM root r WHERE r.userId = @userId`,
             parameters: [
@@ -117,17 +117,17 @@ async function increaseCountCreatedForms(userId) {
         }
         const { resources: results } = await client
         .database(Database.databaseId)
-        .container(containerId)
+        .container(userContainerId)
         .items.query(querySpec)
         .fetchAll()
 
         if(results.length > 0)
         {
-            console.log(`Querying container:\n${containerId} to increase countCreatedForms for user with id ${userId}`)
+            console.log(`Querying container:\n${userContainerId} to increase countCreatedForms for user with id ${userId}`)
             results[0].countCreatedForms +=1;
             const { item } = await client
             .database(Database.databaseId)
-            .container(containerId)
+            .container(userContainerId)
             .item(results[0].userId, results[0].partitionKey)
             .replace(results[0])
         }

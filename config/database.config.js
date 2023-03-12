@@ -11,4 +11,8 @@ config.usersContainer = {
   id: 'Users'
 }
 
+config.formssContainer = {
+  id: 'Forms'
+}
+
 module.exports = config;
