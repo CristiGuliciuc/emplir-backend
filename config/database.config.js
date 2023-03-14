@@ -11,7 +11,7 @@ config.usersContainer = {
   id: 'Users'
 }
 
-config.formssContainer = {
+config.formsContainer = {
   id: 'Forms'
 }
 

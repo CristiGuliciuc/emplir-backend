@@ -8,4 +8,6 @@ module.exports = (app) => {
     app.get("/forms/getOne/", Forms.findOne);
     // Endpoint for creating a new form
     app.post("/forms/create/", Forms.create);
+    // Endpoint for update a form
+    app.post("/forms/update/", Forms.update);
 };
