@@ -7,8 +7,6 @@ require("dotenv").config();
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
 
-const swaggerSpec = swaggerJSDoc(swaggerConfig.optionsSwagger);
-
 var corsOptions = {
   origin: "*",
   optionsSuccessStatus: 200,
@@ -20,7 +18,6 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /**
  * Exit the app with a prompt
