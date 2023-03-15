@@ -12,4 +12,6 @@ module.exports = (app) => {
     app.post("/forms/update/", Forms.update);
     // Endpoint for delete a form
     app.delete("/forms/delete/", Forms.delete);
+    // Endpoint for retrieving all submissions forms
+    app.get("/submissions/getAll/", Forms.findAllSubmissions);
 };

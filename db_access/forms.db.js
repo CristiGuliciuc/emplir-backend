@@ -92,13 +92,53 @@ async function findAll(userId) {
             .items.query(querySpec)
             .fetchAll()
 
-        if (results.length > 0)
-            return JSON.stringify(results);
-        else return null;
+        if (results.length > 0) 
+            return results;
+        else
+            return null;
+
     } catch (err) {
         console.log("In forms.db: " + err.message);
     }
 }
+
+async function findAllSubmissions(formId) {
+    try {
+        console.log(`Get all submissions forms for form with id: ${formId}`);
+
+        const querySpec = {
+            query: `SELECT { 
+            "submissionId": r.submissionId,
+            "date": r.date,
+            "fields": r.fields
+        } FROM root r WHERE r.formId = @formId and r.type='submission'`,
+            parameters: [
+                { name: '@formId', value: formId }
+            ]
+        };
+
+        const { resources: submissions } = await client
+            .database(Database.databaseId)
+            .container(formsContainerId)
+            .items.query(querySpec)
+            .fetchAll();
+
+        if (submissions.length > 0) {
+            const modifiedSubmissions = submissions.map((submission) => {
+                const fields = submission.$1.fields.length > 5 ? submission.$1.fields.slice(0, 5) : submission.$1.fields;
+                return { submissionId: submission.$1.submissionId, date: submission.$1.date, fields };
+            });
+            return modifiedSubmissions;
+        } else {
+            console.log(`Submissions with formid: ${formId} was not found in ${formsContainerId} container!`);
+            return null;
+        }
+    } catch (err) {
+        console.log(`Error in findAllSubmissions: ${err.message}`);
+        return null;
+    }
+}
+
 
 async function findOne(userId, formId) {
     try {
@@ -165,6 +205,7 @@ async function deleteFormItem(userId, formIdToDelete) {
 
 module.exports = {
     findAll,
+    findAllSubmissions,
     createFormItem,
     updateFormItem,
     findOne,
