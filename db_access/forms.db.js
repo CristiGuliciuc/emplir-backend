@@ -1,7 +1,5 @@
 const CosmosClient = require('@azure/cosmos').CosmosClient;
-const PatchOperation = require('fast-json-patch');
 const databaseConfig = require("../config/database.config");
-
 const Database = require("./setup.db");
 
 // !!! should also add a FORMS container
@@ -64,7 +62,6 @@ async function updateFormItem(updatedForm, formIdToUpdate) {
         }
     } catch (error) {
         console.error("Error updating form item:", error);
-        throw error;
     }
 }
 
@@ -134,9 +131,42 @@ async function findOne(userId, formId) {
     }
 }
 
+async function deleteFormItem(userId, formIdToDelete) {
+    try {
+        const database = client.database(Database.databaseId);
+
+        // delete form from forms container
+        const formsContainer = database.container(formsContainerId);
+        const { resources: formsFormsContainer } = await formsContainer.items.readAll().fetchAll();
+        const formFormsContainer = formsFormsContainer.find((t) => t.formId == formIdToDelete && t.userId == userId);
+        if (formFormsContainer) {
+            await formsContainer.item(formFormsContainer.id, formFormsContainer.formId).delete();
+            console.log(`Form with id: ${formIdToDelete} was deleted successfully from ${formsContainerId} container!`);
+        } else {
+            console.log(`Form with id: ${formIdToDelete} was not found in ${formsContainerId} container!`);
+        }
+
+        // delete form from forms container
+        const usersContainer = database.container(usersContainerId);
+        const { resources: formsUsersContainer } = await usersContainer.items.readAll().fetchAll();
+        const formUsersContainer = formsUsersContainer.find((t) => t.formId == formIdToDelete && t.userId == userId);
+        if (formUsersContainer) {
+            await usersContainer.item(formUsersContainer.id, formUsersContainer.userId).delete();
+            console.log(`Form with id: ${formIdToDelete} was deleted successfully from ${usersContainerId} container!`);
+        } else {
+            console.log(`Form with id: ${formIdToDelete} was not found in ${usersContainerId} container!`);
+        }
+
+    } catch (error) {
+        console.error("Error deleting form:", error);
+    }
+}
+
+
 module.exports = {
     findAll,
     createFormItem,
     updateFormItem,
-    findOne
+    findOne,
+    deleteFormItem
 };

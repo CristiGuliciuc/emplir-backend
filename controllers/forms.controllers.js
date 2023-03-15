@@ -112,7 +112,7 @@ exports.update = async (req, res) => {
     };
 
     await Forms.updateFormItem(newForm, req.query.formId);
-    return res.status(201).send("Form update successful!!");
+    return res.status(201).send("Form update successful!");
   }
   catch (err) {
     return res.status(500), send({ message: err.message });
@@ -139,6 +139,18 @@ exports.findOne = async (req, res) => {
     const formId = req.query.formId;
     forms = await Forms.findOne(userId, formId);
     return res.status(200).send(forms);
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+// Delete a form by userId and formId
+exports.delete = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    const formIdToDelete = req.query.formId;
+    await Forms.deleteFormItem(userId, formIdToDelete);
+    return res.status(200).send(`Form with id: ${formIdToDelete} was delete successful!`)
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }

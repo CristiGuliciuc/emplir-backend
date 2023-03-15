@@ -10,4 +10,6 @@ module.exports = (app) => {
     app.post("/forms/create/", Forms.create);
     // Endpoint for update a form
     app.post("/forms/update/", Forms.update);
+    // Endpoint for delete a form
+    app.delete("/forms/delete/", Forms.delete);
 };
