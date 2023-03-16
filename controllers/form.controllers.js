@@ -1,5 +1,5 @@
-const Forms = require("../db_access/forms.db");
-const User = require("../db_access//user.db");
+const Forms = require("../db_access/form.db");
+const User = require("../db_access/user.db");
 const { v4: uuidv4 } = require('uuid');
 
 exports.create = async (req, res) => {
@@ -111,7 +111,7 @@ exports.update = async (req, res) => {
       sections,
     };
 
-    await Forms.updateFormItem(newForm, req.query.formId);
+    await Forms.updateFormItem(newForm, req.query.formId, "all");
     return res.status(201).send("Form update successful!");
   }
   catch (err) {
@@ -125,18 +125,6 @@ exports.findAll = async (req, res) => {
     let forms = {};
     const userId = req.query.userId;
     forms = await Forms.findAll(userId);
-    return res.status(200).send(forms);
-  } catch (err) {
-    return res.status(500).send({ message: err.message });
-  }
-};
-
-//Get all submissions forms by formId
-exports.findAllSubmissions = async (req, res) => {
-  try {
-    let forms = {};
-    const formId = req.query.formId;
-    forms = await Forms.findAllSubmissions(formId);
     return res.status(200).send(forms);
   } catch (err) {
     return res.status(500).send({ message: err.message });

@@ -1,4 +1,4 @@
-const Forms = require("../controllers/forms.controllers");
+const Forms = require("../controllers/form.controllers");
 const auth = require("../middlewares/authJwt")
 
 module.exports = (app) => {
@@ -12,6 +12,4 @@ module.exports = (app) => {
     app.post("/forms/update/", Forms.update);
     // Endpoint for delete a form
     app.delete("/forms/delete/", Forms.delete);
-    // Endpoint for retrieving all submissions forms
-    app.get("/submissions/getAll/", Forms.findAllSubmissions);
 };

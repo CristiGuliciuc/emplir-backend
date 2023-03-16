@@ -31,8 +31,9 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0))
 }
 
-require("./routes/forms.routes")(app);
+require("./routes/form.routes")(app);
 require("./routes/user.routes")(app);
+require("./routes/submissions.routes")(app);
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://${HOST}:${PORT}`)
