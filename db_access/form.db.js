@@ -3,8 +3,6 @@ const Database = require("./setup.db");
 
 const usersContainerId = databaseConfig.usersContainer.id
 const formsContainerId = databaseConfig.formsContainer.id
-const usersContainerPartitionKey = { kind: 'Hash', paths: ['/userId'] }
-const formsContainerPartitionKey = { kind: 'Hash', paths: ['/formId'] }
 
 const client = Database.client;
 
@@ -24,8 +22,8 @@ async function createFormItem(itemBody) {
 
 async function updateFormItem(itemBody, formIdToUpdate, typeUpdate) {
     try {
-        updateFormContainer(formsContainerId, itemBody, formIdToUpdate, typeUpdate);
-        updateFormContainer(usersContainerId, itemBody, formIdToUpdate, typeUpdate);
+        await updateFormContainer(formsContainerId, itemBody, formIdToUpdate, typeUpdate);
+        await updateFormContainer(usersContainerId, itemBody, formIdToUpdate, typeUpdate);
     } catch (error) {
         console.error("Error updating form in containers:", error);
     }
@@ -55,21 +53,24 @@ async function updateFormContainer(containerId, itemBody, formIdToUpdate, typeUp
 }
 
 function updateForm(form, itemBody, typeUpdate) {
-    switch(typeUpdate) {
-      case "all": 
-        form.title = itemBody.title;
-        form.dataRetentionPeriod = itemBody.dataRetentionPeriod;
-        form.fields = itemBody.fields;
-        form.sections = itemBody.sections;
-        break;
-      case "incrementSubmissionsCount":
-        form.countSubmissions = (parseInt(form.countSubmissions) + itemBody.incrementValue).toString();
-        break;
-      default:
-        console.log(`Unsupported typeUpdate value: ${typeUpdate}`);
+    switch (typeUpdate) {
+        case "all":
+            form.title = itemBody.title;
+            form.dataRetentionPeriod = itemBody.dataRetentionPeriod;
+            form.fields = itemBody.fields;
+            form.sections = itemBody.sections;
+            break;
+        case "incrementCountSubmissions":
+            form.countSubmissions = (parseInt(form.countSubmissions) + itemBody.incrementValue).toString();
+            break;
+        case "decrementCountSubmissions":
+            form.countSubmissions = (parseInt(form.countSubmissions) - itemBody.decrementValue).toString();
+            break;
+        default:
+            console.log(`Unsupported typeUpdate value: ${typeUpdate}`);
     }
-  }
-  
+}
+
 async function findAll(userId) {
     try {
         console.log(`Get all forms for user whit id:${userId}`);
@@ -78,7 +79,7 @@ async function findAll(userId) {
             "formId": r.formId,
             "title": r.title,
             "dataRetentionPeriod": r.dataRetentionPeriod,
-            "submissionsCount": r.submissionsCount 
+            "countSubmissions": r.countSubmissions 
         } FROM root r WHERE r.userId = @userId`,
             parameters: [
                 { name: '@userId', value: `${userId}` }
@@ -108,7 +109,7 @@ async function findOne(userId, formId) {
             "formId": r.formId,
             "title": r.title,
             "dataRetentionPeriod": r.dataRetentionPeriod,
-            "submissionsCount": r.submissionsCount,
+            "countSubmissions": r.countSubmissions,
             "fields": r.fields,
             "sections": r.sections
         } FROM root r WHERE r.userId = @userId AND r.formId = @formId`,
@@ -134,7 +135,7 @@ async function findOne(userId, formId) {
 async function deleteFormItem(userId, formIdToDelete) {
     deleteForm(userId, formIdToDelete, formsContainerId);
     deleteForm(userId, formIdToDelete, usersContainerId);
-    deleteSubmissionsRelatedToForm(userId, formIdToDelete);
+    deleteSubmissions(userId, formIdToDelete, null);
 }
 async function deleteForm(userId, formIdToDelete, containerId) {
     try {
@@ -157,31 +158,44 @@ async function deleteForm(userId, formIdToDelete, containerId) {
         console.error("Error deleting form:", error);
     }
 }
-async function deleteSubmissionsRelatedToForm(userId, formId) {
+async function deleteSubmissions(userId, formId, submissionId) {
     try {
         const database = client.database(Database.databaseId);
         const container = database.container(formsContainerId);
-        const { resources: submissions } = await container.items.readAll().fetchAll();
-        const submissionsToDelete = submissions.filter((t) => t.formId == formId && t.userId == userId && t.type == "submission");
 
-        if (submissionsToDelete.length > 0) {
-            for (const submission of submissionsToDelete) {
-                await container.item(submission.id, submission.formId).delete();
-                console.log(`Submission with id: ${submission.id} was deleted successfully from ${formsContainerId} container!`);
-            }
+        const { resources: submissions } = await container.items.readAll().fetchAll();
+        let submissionsToDelete;
+
+        if (submissionId) {
+            submissionsToDelete = submissions.filter((t) => t.formId == formId && t.userId == userId && t.submissionId == submissionId && t.type == "submission");
         } else {
-            console.log(`No submissions with formid: ${formId} were found in ${formsContainerId} container!`);
+            submissionsToDelete = submissions.filter((t) => t.formId == formId && t.userId == userId && t.type == "submission");
         }
 
+        if (submissionsToDelete.length > 0) {
+            const submissionsCount = {
+                decrementValue: 0,
+            };
+            for (const submission of submissionsToDelete) {
+                await container.item(submission.id, submission.formId).delete();
+                submissionsCount.decrementValue ++;
+                console.log(`Submission with id: ${submission.id} was deleted successfully from ${formsContainerId} container!`);
+            }
+
+            // decrement submissionsCount for form with formId
+            await updateFormItem(submissionsCount, formId, "decrementCountSubmissions");
+        } else {
+            console.log(`No submissions with formid: ${formId} and userid: ${userId} were found in ${formsContainerId} container!`);
+        }
     } catch (error) {
         console.error("Error deleting submissions:", error);
     }
 }
-
 module.exports = {
     findAll,
     createFormItem,
     updateFormItem,
+    deleteSubmissions,
     findOne,
-    deleteFormItem
+    deleteFormItem,
 };

@@ -66,3 +66,16 @@ exports.insert = async (req, res) => {
     return res.status(500), send({ message: err.message });
   }
 };
+
+// Delete a form by userId and formId
+exports.delete = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    const formId = req.query.formId;
+    const submissionIdToDelete = req.query.submissionId;
+    await Submissions.deleteSubmissionItem(userId, formId, submissionIdToDelete);
+    return res.status(200).send(`Submission with id: ${submissionIdToDelete} was delete successful!`)
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
