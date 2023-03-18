@@ -6,4 +6,6 @@ module.exports = (app) => {
     app.get("/submissions/getAll/", Submissions.findAll);
     // Endpoint for insert a new submission
     app.post("/submissions/send/", Submissions.insert);
+    // Endpoint for delete a submission
+    app.delete("/submissions/delete/", Submissions.delete);
 };

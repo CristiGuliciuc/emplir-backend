@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const Forms = require("../db_access/form.db");
 
 const formsContainerId = databaseConfig.formsContainer.id
+const usersContainerId = databaseConfig.usersContainer.id
 const client = Database.client;
 
 async function findAll(formId) {
@@ -13,7 +14,7 @@ async function findAll(formId) {
         const querySpec = {
             query: `SELECT { 
             "submissionId": r.submissionId,
-            "date": r.date,
+            "data": r.data,
             "fields": r.fields
         } FROM root r WHERE r.formId = @formId and r.type='submission'`,
             parameters: [
@@ -28,11 +29,7 @@ async function findAll(formId) {
             .fetchAll();
 
         if (submissions.length > 0) {
-            const modifiedSubmissions = submissions.map((submission) => {
-                const fields = submission.$1.fields.length > 5 ? submission.$1.fields.slice(0, 5) : submission.$1.fields;
-                return { submissionId: submission.$1.submissionId, date: submission.$1.date, fields };
-            });
-            return modifiedSubmissions;
+            return submissions;
         } else {
             console.log(`Submissions with formid: ${formId} was not found in ${formsContainerId} container!`);
             return null;
@@ -45,7 +42,6 @@ async function findAll(formId) {
 
 async function insert(itemBody) {
     try {
-        // add submissions 
         const sections = itemBody.sections.map((section) => {
             return {
                 ...section,
@@ -66,20 +62,28 @@ async function insert(itemBody) {
             .database(Database.databaseId)
             .container(formsContainerId)
             .items.upsert(itemBody)
-
-        console.log(`Insert submissions with id: ${itemBody.submissionId}`);
-
-        // increment submissionsCount for form with formId
-        const increment = {
-            incrementValue: 1,
-          };
-        Forms.updateFormItem(increment, itemBody.formId, "incrementSubmissionsCount");
+        if (item) {
+            console.log(`Insert submissions with id: ${itemBody.submissionId}`);
+            // increment submissionsCount for form with formId
+            const submissionsCount = {
+                incrementValue: 1,
+            };
+            Forms.updateFormItem(submissionsCount, itemBody.formId, "incrementCountSubmissions");
+        } else {
+            console.log(`Insert submission have failed`);
+        }
     } catch (err) {
         console.log("In forms.db: " + err.message);
     }
 }
 
+async function deleteSubmissionItem(userId, formId, submissionIdToDelete) {
+
+    Forms.deleteSubmissions(userId, formId, submissionIdToDelete);
+}
+
 module.exports = {
     findAll,
-    insert
+    insert,
+    deleteSubmissionItem,
 };
