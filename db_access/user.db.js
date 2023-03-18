@@ -107,33 +107,47 @@ async function getUser(email) {
 
 async function increaseCountCreatedForms(userId) {
     try {
-        console.log(`Querying container:\n${userContainerId} to find countCreatedForms for user with id ${userId}`)
-        const querySpec = {
-            query: `SELECT * FROM root r WHERE r.userId = @userId`,
-            parameters: [
-                {
-                    name: '@userId',
-                    value: userId
-                }
-            ]
-        }
-        const { resources: results } = await client
-            .database(Database.databaseId)
-            .container(userContainerId)
-            .items.query(querySpec)
-            .fetchAll()
+        const database = client.database(Database.databaseId);
+        const container = database.container(userContainerId);
+        const { resources: containerResources } = await container.items.readAll().fetchAll();
+        const user = containerResources.find((t) => t.userId == userId && t.type == "user");
 
-        if (results.length > 0) {
-            console.log(`Querying container:\n${userContainerId} to increase countCreatedForms for user with id ${userId}`)
-            results[0].countCreatedForms += 1;
-            const { item } = await client
-                .database(Database.databaseId)
-                .container(userContainerId)
-                .item(results[0].userId, results[0].partitionKey)
-                .replace(results[0])
+        if (user) {
+            user.countCreatedForms = parseInt(user.countCreatedForms) + 1;
+            const { resource: userUpdate } = await container.items.upsert(user);
+            if (userUpdate) {
+                console.log(`User with id: ${userId} updated countCreatedForms successfully in ${userContainerId} container!`);
+            } else {
+                console.log(`Error updating user with id: ${userId} in ${userContainerId} container!`);
+            }
+        } else {
+            console.log(`User with id: ${userId} was not found in ${userContainerId} container!`);
         }
-    } catch (err) {
-        console.log("In user.increaseUserCountCreatedForms: " + err.message);
+    } catch (error) {
+        console.error(`Error updating user item in ${userContainerId} container:`, error);
+    }
+}
+
+async function decreaseCountCreatedForms(userId) {
+    try {
+        const database = client.database(Database.databaseId);
+        const container = database.container(userContainerId);
+        const { resources: containerResources } = await container.items.readAll().fetchAll();
+        const user = containerResources.find((t) => t.userId == userId && t.type == "user");
+
+        if (user) {
+            user.countCreatedForms = parseInt(user.countCreatedForms) - 1;
+            const { resource: userUpdate } = await container.items.upsert(user);
+            if (userUpdate) {
+                console.log(`User with id: ${userId} updated countCreatedForms successfully in ${userContainerId} container!`);
+            } else {
+                console.log(`Error updating user with id: ${userId} in ${userContainerId} container!`);
+            }
+        } else {
+            console.log(`User with id: ${userId} was not found in ${userContainerId} container!`);
+        }
+    } catch (error) {
+        console.error(`Error updating user item in ${userContainerId} container:`, error);
     }
 }
 
@@ -149,5 +163,6 @@ module.exports = {
     emailExists,
     accountNameExists,
     getUser,
-    increaseCountCreatedForms
+    increaseCountCreatedForms,
+    decreaseCountCreatedForms
 };

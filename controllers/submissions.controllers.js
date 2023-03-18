@@ -35,6 +35,11 @@ exports.insert = async (req, res) => {
     for (let i = 0; i < fields.length; i++) {
       if (!fields[i].placeholder || fields[i].placeholder.length < 1 || fields[i].placeholder.length > 20)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field placeholder" });
+      // validate values
+      if(fields[i].mandatory && !fields[i].value )
+        return res.status(400).json({ fieldIndex: i, msg: "Field is mandatory" });
+      if((fields[i].type == "Number" || fields[i].type == "Decimal") && fields[i].value.isNaN)
+        return res.status(400).json({ fieldIndex: i, msg: "Field should be a number" });
     };
     // validate sections
     for (let i = 0; i < sections; i++) {
@@ -52,7 +57,7 @@ exports.insert = async (req, res) => {
       type: "submission",
       submissionId: uuidv4(),
       formId: req.query.formId,
-      userId: req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1],
+   //   userId: req.userId,
       title,
       dataRetentionPeriod,
       data: `${year}-${month}-${day}`,
@@ -71,7 +76,7 @@ exports.insert = async (req, res) => {
 // Delete a form by userId and formId
 exports.delete = async (req, res) => {
   try {
-    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+    const userId = req.user.id;
     const formId = req.query.formId;
     const submissionIdToDelete = req.query.submissionId;
     await Submissions.deleteSubmissionItem(userId, formId, submissionIdToDelete);
@@ -85,7 +90,7 @@ exports.delete = async (req, res) => {
 exports.findForm = async (req, res) => {
   try {
     let forms = {};
-    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+    const userId = req.user.id;
     const formId = req.query.formId;
     const form = await Forms.findOne(userId, formId);
     if (form)

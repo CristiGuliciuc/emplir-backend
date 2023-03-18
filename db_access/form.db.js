@@ -14,14 +14,16 @@ async function createFormItem(itemBody) {
             .container(usersContainerId)
             .items.upsert(itemBody)
 
-        // const { item2 } = await client
-        //     .database(Database.databaseId)
-        //     .container(formsContainerId)
-        //     .items.upsert(itemBody)
+        const { item2 } = await client
+            .database(Database.databaseId)
+            .container(formsContainerId)
+            .items.upsert(itemBody)
 
         console.log(`Created form with id:\n${itemBody.formId}\n`);
+        return true;
     } catch (err) {
         console.log("In forms.db: " + err.message);
+        return false;
     }
 }
 
@@ -130,7 +132,7 @@ async function findOne(userId, formId) {
             .fetchAll()
 
         if (results.length > 0)
-            return results;
+            return results[0]['$1'];
         else return null;
     } catch (err) {
         console.log("In forms.db: " + err.message);
@@ -138,16 +140,22 @@ async function findOne(userId, formId) {
 }
 
 async function deleteFormItem(userId, formIdToDelete) {
-    deleteForm(userId, formIdToDelete, formsContainerId);
-    deleteForm(userId, formIdToDelete, usersContainerId);
-    deleteSubmissions(userId, formIdToDelete, null);
+    const deleted = await deleteForm(userId, formIdToDelete, formsContainerId) &&
+       await deleteForm(userId, formIdToDelete, usersContainerId);
+    if(deleted){
+        await deleteSubmissions(userId, formIdToDelete, null);
+        return true;
+    }
+    return false;
 }
+
 async function deleteForm(userId, formIdToDelete, containerId) {
     try {
         const database = client.database(Database.databaseId);
         const container = database.container(containerId);
         const { resources: forms } = await container.items.readAll().fetchAll();
         const form = forms.find((t) => t.formId == formIdToDelete && t.userId == userId && t.type == "form");
+        console.log("formId: " +formIdToDelete +" userId: " + userId + " form: " + form);
 
         if (form) {
             if (containerId == usersContainerId)
@@ -155,12 +163,15 @@ async function deleteForm(userId, formIdToDelete, containerId) {
             else
                 await container.item(form.id, form.formId).delete();
             console.log(`Form with id: ${formIdToDelete} was deleted successfully from ${containerId} container!`);
+            return true;
         } else {
             console.log(`Form with id: ${formIdToDelete} was not found in ${containerId} container!`);
+            return false;
         }
 
     } catch (error) {
         console.error("Error deleting form:", error);
+        return false;
     }
 }
 async function deleteSubmissions(userId, formId, submissionId) {

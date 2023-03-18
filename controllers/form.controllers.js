@@ -46,7 +46,7 @@ exports.create = async (req, res) => {
     const newForm = {
       type: "form",
       formId: uuidv4(),
-      userId: req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1],
+      userId: req.user.id,
       title,
       dataRetentionPeriod,
       fields,
@@ -54,10 +54,14 @@ exports.create = async (req, res) => {
       countSubmissions: "0"
     };
 
-    await Forms.createFormItem(newForm);
-    // not functional this part yet
-    //  await User.increaseCountCreatedForms(newForm.userId);
-    return res.status(201).send(newForm.formId.toString());
+    let created = await Forms.createFormItem(newForm);
+    if(created)
+    {
+      await User.increaseCountCreatedForms(newForm.userId);
+      return res.status(201).send(newForm.formId.toString());
+    }
+    else 
+      return res.status(400).send({message: "Couldn't create new form"});
 
   } catch (err) {
     return res.status(500).send({ message: err.message });
@@ -123,7 +127,7 @@ exports.update = async (req, res) => {
 exports.findAll = async (req, res) => {
   try {
     let forms = {};
-    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+    const userId = req.user.id;
     forms = await Forms.findAll(userId);
     return res.status(200).send(forms);
   } catch (err) {
@@ -134,11 +138,13 @@ exports.findAll = async (req, res) => {
 //Get form by userId and formId
 exports.findOne = async (req, res) => {
   try {
-    let forms = {};
-    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+    let form = {};
+    const userId = req.user.id;
     const formId = req.query.formId;
-    forms = await Forms.findOne(userId, formId);
-    return res.status(200).send(forms);
+    form = await Forms.findOne(userId, formId);
+    if(!form)
+      return res.status(404).send(`Form not found`)
+    return res.status(200).send(form);
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }
@@ -147,10 +153,14 @@ exports.findOne = async (req, res) => {
 // Delete a form by userId and formId
 exports.delete = async (req, res) => {
   try {
-    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+    const userId = req.user.id;
     const formIdToDelete = req.query.formId;
-    await Forms.deleteFormItem(userId, formIdToDelete);
-    return res.status(200).send(`Form with id: ${formIdToDelete} was delete successful!`)
+    let deleted = await Forms.deleteFormItem(userId, formIdToDelete);
+    if(deleted){
+      User.decreaseCountCreatedForms(userId);
+      return res.status(200).send(`Form with id: ${formIdToDelete} was deleted successful!`);
+    } else return res.status(400).send(`Form with id: ${formIdToDelete} couldn't be deleted!`);
+
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }

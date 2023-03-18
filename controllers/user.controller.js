@@ -17,7 +17,7 @@ exports.create = async (req, res) => {
   
       //VALIDATIONS
       if(accountType != "Individual" && accountType != "Company" && accountType != "Public Institution")
-        return res.status(400).json({ msg: "Invalid account type. Valid options are: Individual/Company/Public Institution" });
+      return res.status(400).json({ msg: "Invalid account type. Valid options are: Individual/Company/Public Institution" });
       if(accountName.length == 0 || accountName.length > 20 )
         return res.status(400).json({ msg: "Invalid accountName: maximum 20 characters" });
       const userExists = await User.accountNameExists(accountName);
