@@ -1,3 +1,4 @@
+const Forms = require("../db_access/form.db");
 const Submissions = require("../db_access/submissions.db");
 const { v4: uuidv4 } = require('uuid');
 
@@ -51,7 +52,7 @@ exports.insert = async (req, res) => {
       type: "submission",
       submissionId: uuidv4(),
       formId: req.query.formId,
-      userId: req.query.userId,
+      userId: req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1],
       title,
       dataRetentionPeriod,
       data: `${year}-${month}-${day}`,
@@ -70,11 +71,27 @@ exports.insert = async (req, res) => {
 // Delete a form by userId and formId
 exports.delete = async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
     const formId = req.query.formId;
     const submissionIdToDelete = req.query.submissionId;
     await Submissions.deleteSubmissionItem(userId, formId, submissionIdToDelete);
     return res.status(200).send(`Submission with id: ${submissionIdToDelete} was delete successful!`)
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+//Get form by userId and formId
+exports.findForm = async (req, res) => {
+  try {
+    let forms = {};
+    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+    const formId = req.query.formId;
+    const form = await Forms.findOne(userId, formId);
+    if (form)
+      return res.status(200).send();
+    else
+      return res.status(400).json({ msg: `Form whit id: ${formId} doesn't  exist` });
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }

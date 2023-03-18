@@ -46,7 +46,7 @@ exports.create = async (req, res) => {
     const newForm = {
       type: "form",
       formId: uuidv4(),
-      userId: req.query.userId,
+      userId: req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1],
       title,
       dataRetentionPeriod,
       fields,
@@ -123,7 +123,7 @@ exports.update = async (req, res) => {
 exports.findAll = async (req, res) => {
   try {
     let forms = {};
-    const userId = req.query.userId;
+    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
     forms = await Forms.findAll(userId);
     return res.status(200).send(forms);
   } catch (err) {
@@ -135,7 +135,7 @@ exports.findAll = async (req, res) => {
 exports.findOne = async (req, res) => {
   try {
     let forms = {};
-    const userId = req.query.userId;
+    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
     const formId = req.query.formId;
     forms = await Forms.findOne(userId, formId);
     return res.status(200).send(forms);
@@ -147,7 +147,7 @@ exports.findOne = async (req, res) => {
 // Delete a form by userId and formId
 exports.delete = async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
     const formIdToDelete = req.query.formId;
     await Forms.deleteFormItem(userId, formIdToDelete);
     return res.status(200).send(`Form with id: ${formIdToDelete} was delete successful!`)

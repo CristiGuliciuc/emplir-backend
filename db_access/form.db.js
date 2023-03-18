@@ -9,11 +9,16 @@ const client = Database.client;
 async function createFormItem(itemBody) {
     try {
         console.log(`Created form with id:\n${itemBody.formId}\n`);
-        const { item } = await client
+        const { item1 } = await client
             .database(Database.databaseId)
             .container(usersContainerId)
             .items.upsert(itemBody)
-        // should add it to both forms and users container; for now it is only in the users container
+
+        // const { item2 } = await client
+        //     .database(Database.databaseId)
+        //     .container(formsContainerId)
+        //     .items.upsert(itemBody)
+
         console.log(`Created form with id:\n${itemBody.formId}\n`);
     } catch (err) {
         console.log("In forms.db: " + err.message);
@@ -178,7 +183,7 @@ async function deleteSubmissions(userId, formId, submissionId) {
             };
             for (const submission of submissionsToDelete) {
                 await container.item(submission.id, submission.formId).delete();
-                submissionsCount.decrementValue ++;
+                submissionsCount.decrementValue++;
                 console.log(`Submission with id: ${submission.id} was deleted successfully from ${formsContainerId} container!`);
             }
 
