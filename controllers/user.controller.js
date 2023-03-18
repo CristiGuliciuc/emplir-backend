@@ -79,7 +79,10 @@ exports.login = async (req, res) => {
     });
     return res.status(201).json({
       accessToken: accessToken,
-      refreshToken: refreshToken
+      refreshToken: refreshToken,
+      accountType: user.accountType,
+      accountName: user.accountName,
+      emailAddress: user.emailAddress,
     });
   } catch (err) {
     return res.status(500).send({ message: err.message });
@@ -108,3 +111,14 @@ exports.refreshToken = (req, res) => {
     return res.status(500).json({ msg: err.message });
   }
 };
+
+// exports.getUser = async (req, res) => {
+//   try {
+//     let user = {};
+//     const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
+//     user = await Forms.getUserProfile(userId);
+//     return res.status(200).send(user);
+//   } catch (err) {
+//     return res.status(500).send({ message: err.message });
+//   }
+// };
