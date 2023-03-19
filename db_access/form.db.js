@@ -97,11 +97,13 @@ async function findAll(userId) {
             .container(usersContainerId)
             .items.query(querySpec)
             .fetchAll()
-
-        if (results.length > 0)
-            return results;
-        else
-            return null;
+        
+        let forms = [];
+        for( let i =0 ; i< results.length; i++)
+        {
+            forms[i] = results[i]['$1'];
+        }
+        return forms;
 
     } catch (err) {
         console.log("In forms.db: " + err.message);
