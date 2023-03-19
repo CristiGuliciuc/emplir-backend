@@ -76,11 +76,14 @@ exports.insert = async (req, res) => {
 // Delete a form by userId and formId
 exports.delete = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const formId = req.query.formId;
+    //const userId = req.user.id;
+    //const formId = req.query.formId;
     const submissionIdToDelete = req.query.submissionId;
-    await Submissions.deleteSubmissionItem(userId, formId, submissionIdToDelete);
-    return res.status(200).send(`Submission with id: ${submissionIdToDelete} was delete successful!`)
+    let deleted = await Submissions.deleteSubmissionItem(/*userId, formId,*/ null, null, submissionIdToDelete);
+    if(deleted)
+      return res.status(200).send(`Submission with id: ${submissionIdToDelete} was deleted successfully!`)
+    else
+      return res.status(400).send(`Submission with id: ${submissionIdToDelete} couldn't be deleted!`)
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }
@@ -90,11 +93,12 @@ exports.delete = async (req, res) => {
 exports.findForm = async (req, res) => {
   try {
     let forms = {};
-    const userId = req.user.id;
+    //const userId = req.user.id;
     const formId = req.query.formId;
-    const form = await Forms.findOne(userId, formId);
+    const form = await Forms.findOneWithoutAuth(/*userId,*/ formId);
+    console.log(form);
     if (form)
-      return res.status(200).send();
+      return res.status(200).send(form);
     else
       return res.status(400).json({ msg: `Form whit id: ${formId} doesn't  exist` });
   } catch (err) {

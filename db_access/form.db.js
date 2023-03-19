@@ -141,6 +141,30 @@ async function findOne(userId, formId) {
     }
 }
 
+async function findOneWithoutAuth(formId) {
+    try {
+        console.log(`Get complete data for form whit id:${formId}`);
+        const querySpec = {
+            query: `SELECT * FROM root r WHERE r.type="form" AND r.formId = @formId`,
+            parameters: [
+                { name: '@formId', value: `${formId}` }
+            ]
+        }
+        const { resources: results } = await client
+            .database(Database.databaseId)
+            .container(formsContainerId)
+            .items.query(querySpec)
+            .fetchAll()
+
+            console.log(results);
+        if (results.length > 0)
+            return results[0];
+        else return null;
+    } catch (err) {
+        console.log("In forms.db: " + err.message);
+    }
+}
+
 async function deleteFormItem(userId, formIdToDelete) {
     const deleted = await deleteForm(userId, formIdToDelete, formsContainerId) &&
        await deleteForm(userId, formIdToDelete, usersContainerId);
@@ -185,7 +209,7 @@ async function deleteSubmissions(userId, formId, submissionId) {
         let submissionsToDelete;
 
         if (submissionId) {
-            submissionsToDelete = submissions.filter((t) => t.formId == formId && t.userId == userId && t.submissionId == submissionId && t.type == "submission");
+            submissionsToDelete = submissions.filter((t) => /*t.formId == formId /*&& t.userId == userId &&*/ t.submissionId == submissionId && t.type == "submission");
         } else {
             submissionsToDelete = submissions.filter((t) => t.formId == formId && t.userId == userId && t.type == "submission");
         }
@@ -198,15 +222,18 @@ async function deleteSubmissions(userId, formId, submissionId) {
                 await container.item(submission.id, submission.formId).delete();
                 submissionsCount.decrementValue++;
                 console.log(`Submission with id: ${submission.id} was deleted successfully from ${formsContainerId} container!`);
+                return true;
             }
 
             // decrement submissionsCount for form with formId
             await updateFormItem(submissionsCount, formId, "decrementCountSubmissions");
         } else {
             console.log(`No submissions with formid: ${formId} and userid: ${userId} were found in ${formsContainerId} container!`);
+            return false;
         }
     } catch (error) {
         console.error("Error deleting submissions:", error);
+        return false;
     }
 }
 module.exports = {
@@ -216,4 +243,5 @@ module.exports = {
     deleteSubmissions,
     findOne,
     deleteFormItem,
+    findOneWithoutAuth
 };
