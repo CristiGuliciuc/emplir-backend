@@ -11,15 +11,18 @@ exports.create = async (req, res) => {
       sections,
     } = req.body;
 
+    console.log("dataRetentionPeriod: " + dataRetentionPeriod);
     // VALIDATIONS
     if (title < 3 && title > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
-    if (isNaN(dataRetentionPeriod))
-      return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
-    if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
-      return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
+    // if (isNaN(dataRetentionPeriod))
+    //   return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
+    // if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
+    //   return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     // validate fields
     for (let i = 0; i < fields.length; i++) {
+      if (!fields[i].label || fields[i].label.length < 1 || fields[i].label.length > 20)
+        return res.status(400).json({ fieldIndex: i, msg: "Invalid field label" });
       if (!fields[i].placeholder || fields[i].placeholder.length < 1 || fields[i].placeholder.length > 20)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field placeholder" });
       if (!fields[i].type || (
@@ -80,12 +83,14 @@ exports.update = async (req, res) => {
     // VALIDATIONS
     if (title < 3 && title > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
-    if (isNaN(dataRetentionPeriod))
-      return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
-    if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
-      return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
+    // if (isNaN(dataRetentionPeriod))
+    //   return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
+    // if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
+    //   return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     // validate fields
     for (let i = 0; i < fields.length; i++) {
+      if (!fields[i].label || fields[i].label.length < 1 || fields[i].label.length > 20)
+        return res.status(400).json({ fieldIndex: i, msg: "Invalid field label" });
       if (!fields[i].placeholder || fields[i].placeholder.length < 1 || fields[i].placeholder.length > 20)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field placeholder" });
       if (!fields[i].type || (
