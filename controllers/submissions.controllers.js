@@ -36,7 +36,7 @@ exports.insert = async (req, res) => {
       if (!fields[i].placeholder || fields[i].placeholder.length < 1 || fields[i].placeholder.length > 20)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field placeholder" });
       // validate values
-      if(fields[i].mandatory && !fields[i].value )
+      if(fields[i].isMandatory && !fields[i].value )
         return res.status(400).json({ fieldIndex: i, msg: "Field is mandatory" });
       if((fields[i].type == "Number" || fields[i].type == "Decimal") && fields[i].value.isNaN)
         return res.status(400).json({ fieldIndex: i, msg: "Field should be a number" });

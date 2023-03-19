@@ -31,7 +31,7 @@ exports.create = async (req, res) => {
         fields[i].type != "Single-choice" &&
         fields[i].type != "Multiple-choice"))
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field type. Valid types are: Text/Number/Decimal/Date/Single-choice/Multiple-choice" });
-      if (!fields[i].mandatory /*|| typeof fields[i].mandatory != Boolean*/)
+      if (!fields[i].isMandatory || typeof fields[i].isMandatory != Boolean)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field mandatory. Should be a boolean" });
       if ((fields[i].type == "Multiple-choice" || fields[i].type == "Single-choice") &&
         (!fields[i].options || fields[i].options.length < 1))
@@ -99,7 +99,7 @@ exports.update = async (req, res) => {
         fields[i].type != "Single-choice" &&
         fields[i].type != "Multiple-choice"))
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field type. Valid types are: Text/Number/Decimal/Date/Single-choice/Multiple-choice" });
-      if (!fields[i].mandatory /*|| typeof fields[i].mandatory != Boolean*/)
+      if (!fields[i].isMandatory || typeof fields[i].isMandatory != Boolean)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field mandatory. Should be a boolean" });
       if ((fields[i].type == "Multiple-choice" || fields[i].type == "Single-choice") &&
         (!fields[i].options || fields[i].options.length < 1))
