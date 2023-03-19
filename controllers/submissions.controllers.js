@@ -38,7 +38,7 @@ exports.insert = async (req, res) => {
       // validate values
       if(fields[i].isMandatory && !fields[i].value )
         return res.status(400).json({ fieldIndex: i, msg: "Field is mandatory" });
-      if((fields[i].type == "Number" || fields[i].type == "Decimal") && fields[i].value.isNaN)
+      if((fields[i].type == "Number" || fields[i].type == "Decimal") && isNaN(fields[i].value))
         return res.status(400).json({ fieldIndex: i, msg: "Field should be a number" });
     };
     // validate sections
@@ -73,13 +73,13 @@ exports.insert = async (req, res) => {
   }
 };
 
-// Delete a form by userId and formId
+// Delete a submission by formId and submission id
 exports.delete = async (req, res) => {
   try {
     //const userId = req.user.id;
-    //const formId = req.query.formId;
+    const formId = req.query.formId;
     const submissionIdToDelete = req.query.submissionId;
-    let deleted = await Submissions.deleteSubmissionItem(/*userId, formId,*/ null, null, submissionIdToDelete);
+    let deleted = await Submissions.deleteSubmissionItem(/*userId,*/ formId, submissionIdToDelete);
     if(deleted)
       return res.status(200).send(`Submission with id: ${submissionIdToDelete} was deleted successfully!`)
     else

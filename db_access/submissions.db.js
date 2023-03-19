@@ -77,9 +77,9 @@ async function insert(itemBody) {
     }
 }
 
-async function deleteSubmissionItem(userId, formId, submissionIdToDelete) {
+async function deleteSubmissionItem(/*userId,*/ formId, submissionIdToDelete) {
 
-    return await Forms.deleteSubmissions(userId, formId, submissionIdToDelete);
+    return await Forms.deleteSubmissions(/*userId,*/ formId, submissionIdToDelete);
 }
 
 module.exports = {

@@ -169,7 +169,7 @@ async function deleteFormItem(userId, formIdToDelete) {
     const deleted = await deleteForm(userId, formIdToDelete, formsContainerId) &&
        await deleteForm(userId, formIdToDelete, usersContainerId);
     if(deleted){
-        await deleteSubmissions(userId, formIdToDelete, null);
+        await deleteSubmissions(/*userId,*/ formIdToDelete, null);
         return true;
     }
     return false;
@@ -200,7 +200,7 @@ async function deleteForm(userId, formIdToDelete, containerId) {
         return false;
     }
 }
-async function deleteSubmissions(userId, formId, submissionId) {
+async function deleteSubmissions(/*userId,*/ formId, submissionId) {
     try {
         const database = client.database(Database.databaseId);
         const container = database.container(formsContainerId);
@@ -211,7 +211,7 @@ async function deleteSubmissions(userId, formId, submissionId) {
         if (submissionId) {
             submissionsToDelete = submissions.filter((t) => /*t.formId == formId /*&& t.userId == userId &&*/ t.submissionId == submissionId && t.type == "submission");
         } else {
-            submissionsToDelete = submissions.filter((t) => t.formId == formId && t.userId == userId && t.type == "submission");
+            submissionsToDelete = submissions.filter((t) => t.formId == formId /*&& t.userId == userId*/ && t.type == "submission");
         }
 
         if (submissionsToDelete.length > 0) {
@@ -222,13 +222,13 @@ async function deleteSubmissions(userId, formId, submissionId) {
                 await container.item(submission.id, submission.formId).delete();
                 submissionsCount.decrementValue++;
                 console.log(`Submission with id: ${submission.id} was deleted successfully from ${formsContainerId} container!`);
-                return true;
             }
 
             // decrement submissionsCount for form with formId
             await updateFormItem(submissionsCount, formId, "decrementCountSubmissions");
+            return true;
         } else {
-            console.log(`No submissions with formid: ${formId} and userid: ${userId} were found in ${formsContainerId} container!`);
+            console.log(`No submissions with formid: ${formId} were found in ${formsContainerId} container!`);
             return false;
         }
     } catch (error) {

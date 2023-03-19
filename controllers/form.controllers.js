@@ -11,7 +11,6 @@ exports.create = async (req, res) => {
       sections,
     } = req.body;
 
-    console.log("dataRetentionPeriod: " + dataRetentionPeriod);
     // VALIDATIONS
     if (title < 3 && title > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
@@ -31,8 +30,8 @@ exports.create = async (req, res) => {
         fields[i].type != "Single-choice" &&
         fields[i].type != "Multiple-choice"))
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field type. Valid types are: Text/Number/Decimal/Date/Single-choice/Multiple-choice" });
-      if (!fields[i].isMandatory || typeof fields[i].isMandatory != Boolean)
-        return res.status(400).json({ fieldIndex: i, msg: "Invalid field mandatory. Should be a boolean" });
+      // if (!fields[i].isMandatory || typeof fields[i].isMandatory != Boolean)
+      //   return res.status(400).json({ fieldIndex: i, msg: "Invalid field mandatory. Should be a boolean" });
       if ((fields[i].type == "Multiple-choice" || fields[i].type == "Single-choice") &&
         (!fields[i].options || fields[i].options.length < 1))
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field options. You should provide at least one option for single/multiple-choice field types" });
@@ -45,7 +44,13 @@ exports.create = async (req, res) => {
         return res.status(400).json({ sectionIndex: i, msg: "Invalid scan doc type: cannot be empty nor contain more that 25 chars" });
     }
 
-    console.log(req.user);
+    // check if maximum forms for subscription type have been reached
+    const user = await User.getUserById(req.user.id);
+    if(user && user.countCreatedForms == user.subscription.maxForms)
+    {
+        return res.status(400).json({ msg: `Maximum forms ${user.subscription.maxForms} created. Upgrade your subscription plan to create more forms`});
+    }
+
     const newForm = {
       type: "form",
       formId: uuidv4(),
@@ -83,10 +88,10 @@ exports.update = async (req, res) => {
     // VALIDATIONS
     if (title < 3 && title > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
-    // if (isNaN(dataRetentionPeriod))
-    //   return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
-    // if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
-    //   return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
+    if (isNaN(dataRetentionPeriod))
+      return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
+    if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
+      return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     // validate fields
     for (let i = 0; i < fields.length; i++) {
       if (!fields[i].label || fields[i].label.length < 1 || fields[i].label.length > 20)
@@ -99,8 +104,8 @@ exports.update = async (req, res) => {
         fields[i].type != "Single-choice" &&
         fields[i].type != "Multiple-choice"))
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field type. Valid types are: Text/Number/Decimal/Date/Single-choice/Multiple-choice" });
-      if (!fields[i].isMandatory || typeof fields[i].isMandatory != Boolean)
-        return res.status(400).json({ fieldIndex: i, msg: "Invalid field mandatory. Should be a boolean" });
+      // if (!fields[i].isMandatory || typeof fields[i].isMandatory != Boolean)
+      //   return res.status(400).json({ fieldIndex: i, msg: "Invalid field mandatory. Should be a boolean" });
       if ((fields[i].type == "Multiple-choice" || fields[i].type == "Single-choice") &&
         (!fields[i].options || fields[i].options.length < 1))
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field options. You should provide at least one option for single/multiple-choice field types" });
@@ -162,7 +167,7 @@ exports.delete = async (req, res) => {
     const formIdToDelete = req.query.formId;
     let deleted = await Forms.deleteFormItem(userId, formIdToDelete);
     if(deleted){
-      User.decreaseCountCreatedForms(userId);
+      await User.decreaseCountCreatedForms(userId);
       return res.status(200).send(`Form with id: ${formIdToDelete} was deleted successful!`);
     } else return res.status(400).send(`Form with id: ${formIdToDelete} couldn't be deleted!`);
 

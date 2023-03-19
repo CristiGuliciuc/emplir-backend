@@ -82,7 +82,7 @@ async function getUser(email) {
                 "accountName": r.accountName,
                 "emailAddress": r.emailAddress,
                 "password": r.password
-            } FROM root r WHERE r.emailAddress = @email`,
+            } FROM root r WHERE r.type = "user" AND r.emailAddress = @email`,
             parameters: [
                 {
                     name: '@email',
@@ -102,6 +102,33 @@ async function getUser(email) {
 
     } catch (err) {
         console.log("In user.getUser: " + err.message);
+    }
+}
+
+async function getUserById(id) {
+    try {
+        console.log(`Querying container:\n${userContainerId} to find  user with id ${id}`)
+        const querySpec = {
+            query: `SELECT * FROM root r WHERE r.type="user" AND r.userId = @userId`,
+            parameters: [
+                {
+                    name: '@userId',
+                    value: id
+                }
+            ]
+        }
+        const { resources: results } = await client
+            .database(Database.databaseId)
+            .container(userContainerId)
+            .items.query(querySpec)
+            .fetchAll()
+
+        if (results.length > 0)
+            return results[0];
+        else return null;
+
+    } catch (err) {
+        console.log("In user.getUserById: " + err.message);
     }
 }
 
@@ -164,5 +191,6 @@ module.exports = {
     accountNameExists,
     getUser,
     increaseCountCreatedForms,
-    decreaseCountCreatedForms
+    decreaseCountCreatedForms,
+    getUserById
 };
