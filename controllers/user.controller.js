@@ -112,13 +112,13 @@ exports.refreshToken = (req, res) => {
   }
 };
 
-// exports.getUser = async (req, res) => {
-//   try {
-//     let user = {};
-//     const userId = req.rawHeaders[req.rawHeaders.indexOf('Authorization') + 1];
-//     user = await Forms.getUserProfile(userId);
-//     return res.status(200).send(user);
-//   } catch (err) {
-//     return res.status(500).send({ message: err.message });
-//   }
-// };
+exports.getUser = async (req, res) => {
+  try {
+    const user = await User.getUserById(req.user.id);
+    if(user)
+      return res.status(200).send(user);
+    else return res.status(404).send(`User not found`);
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};

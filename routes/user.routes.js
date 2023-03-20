@@ -9,5 +9,5 @@ module.exports = (app) => {
     // Endpoint to refresh token when it expires
     app.get("/refresh-token/", User.refreshToken);
     // Endpoint to retrieving essential data
-    // app.get("/users/profile/", User.getUser);
+     app.get("/users/profile/",auth, User.getUser);
 }
