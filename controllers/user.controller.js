@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../db_access/user.db");
 const { v4: uuidv4 } = require('uuid');
+const bcrypt =require('bcryptjs');
 require("dotenv").config();
 
 exports.create = async (req, res) => {
@@ -37,6 +38,7 @@ exports.create = async (req, res) => {
       if(password.length < 8 && password.length> 20)
         return res.status(400).json({ msg: "Invalid password: minimum 8 and maximum 20 characters" });
       // !! To add: bcrypt for password
+      const passwordHash = await bcrypt.hash(password, 10);
   
       const newUser = {
         type : "user",
@@ -46,7 +48,7 @@ exports.create = async (req, res) => {
         fiscalCode,
         address,
         emailAddress,
-        password,
+        password : passwordHash,
         subscription,
         countCreatedForms : "0"
       };
@@ -67,7 +69,11 @@ exports.login = async (req, res) => {
     const user = await User.getUser(emailAddress);
     if(! user)
       return res.status(400).json({accessToken: null, msg: "There's no account for this email" });
-    if(password != user.password)
+    var passwordIsValid = bcrypt.compareSync(
+        password,
+        user.password
+      );
+    if(! passwordIsValid)
       return res.status(400).json({ accessToken: null, msg: "Incorrect password" });
     // user data that will be sent to frontend
     const tokenUser = {id: user.userId};
