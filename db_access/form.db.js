@@ -87,7 +87,7 @@ async function findAll(userId) {
             "title": r.title,
             "dataRetentionPeriod": r.dataRetentionPeriod,
             "countSubmissions": r.countSubmissions 
-        } FROM root r WHERE r.userId = @userId`,
+        } FROM root r WHERE r.type="form" AND r.userId = @userId`,
             parameters: [
                 { name: '@userId', value: `${userId}` }
             ]
@@ -103,6 +103,7 @@ async function findAll(userId) {
         {
             forms[i] = results[i]['$1'];
         }
+        console.log(results);
         return forms;
 
     } catch (err) {
