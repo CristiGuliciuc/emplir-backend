@@ -12,4 +12,6 @@ module.exports = (app) => {
     app.post("/forms/update/", auth, Forms.update);
     // Endpoint for delete a form
     app.delete("/forms/delete/", auth, Forms.delete);
+    // Endpoint for filling form via document scan
+    app.post("/forms/fillForm/", Forms.fillForm);
 };

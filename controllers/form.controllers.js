@@ -1,5 +1,6 @@
 const Forms = require("../db_access/form.db");
 const User = require("../db_access/user.db");
+const FormRecognizer = require("../formRecognizer/formRecognizer");
 const { v4: uuidv4 } = require('uuid');
 
 exports.create = async (req, res) => {
@@ -183,3 +184,33 @@ exports.delete = async (req, res) => {
     return res.status(500).send({ message: err.message });
   }
 };
+
+exports.fillForm = async (req, res) => {
+  try {
+    let {
+      fields,
+      documentImg
+    } = req.body;
+
+    // fill the fields values 
+    const keyValuePairs = await FormRecognizer.processFormUrl(documentImg);
+    if(! keyValuePairs || keyValuePairs.length == 0) return res.status(200).send(fields);
+
+    // check if any of the documentKeyword for each field is found in the extracted data
+    for(let i=0; i< fields.length; i++){
+      for(let j=0; j< fields[i].documentKeywords.length; j++){
+        for(let k = 0; k<keyValuePairs.length; k++){
+          if(keyValuePairs[k].key.content.includes(fields[i].documentKeywords[j]))
+            fields[i].value = keyValuePairs[k].value.content;
+        }
+      }
+    }
+    
+    return res.status(200).send(fields);
+
+    // return res.status(400).send({message: "Couldn't create new form"});
+
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+}
