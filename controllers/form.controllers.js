@@ -12,13 +12,15 @@ exports.create = async (req, res) => {
     } = req.body;
 
     // VALIDATIONS
-    if (title < 3 && title > 255)
+    if (title < 3 || title > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
     if (isNaN(dataRetentionPeriod))
       return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
       return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     //validate fields
+    if(fields.length == 0)
+      return res.status(400).json({ msg: "Invalid fields: form should have at least one field" });
     for (let i = 0; i < fields.length; i++) {
       if (!fields[i].label || fields[i].label.length < 1 || fields[i].label.length > 20)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field label" });
@@ -37,6 +39,8 @@ exports.create = async (req, res) => {
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field options. You should provide at least one option for single/multiple-choice field types" });
     };
     // validate sections
+    if(sections.length == 0)
+      return res.status(400).json({ msg: "Invalid sections: form should have at least one section" });
     for (let i = 0; i < sections; i++) {
       if (!sections[i].content || sections[i].content.length == 0 || sections[i].content > 20000)
         return res.status(400).json({ sectionIndex: i, msg: "Invalid section content: it cannot be empty nor contain more that 20000 chars" });
@@ -86,13 +90,15 @@ exports.update = async (req, res) => {
     } = req.body;
 
     // VALIDATIONS
-    if (title < 3 && title > 255)
+    if (title < 3 || title > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
     if (isNaN(dataRetentionPeriod))
       return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     if (dataRetentionPeriod < 1 || dataRetentionPeriod > 60)
       return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });
     // validate fields
+    if(fields.length == 0)
+      return res.status(400).json({ msg: "Invalid fields: form should have at least one field" });
     for (let i = 0; i < fields.length; i++) {
       if (!fields[i].label || fields[i].label.length < 1 || fields[i].label.length > 20)
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field label" });
@@ -111,6 +117,8 @@ exports.update = async (req, res) => {
         return res.status(400).json({ fieldIndex: i, msg: "Invalid field options. You should provide at least one option for single/multiple-choice field types" });
     };
     // validate sections
+    if(sections.length == 0)
+      return res.status(400).json({ msg: "Invalid sections: form should have at least one section" });
     for (let i = 0; i < sections; i++) {
       if (!sections[i].content || sections[i].content.length == 0 || sections[i].content > 20000)
         return res.status(400).json({ sectionIndex: i, msg: "Invalid section content: it cannot be empty nor contain more that 20000 chars" });
