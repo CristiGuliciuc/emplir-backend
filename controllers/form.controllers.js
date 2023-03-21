@@ -200,7 +200,11 @@ exports.fillForm = async (req, res) => {
     for(let i=0; i< fields.length; i++){
       for(let j=0; j< fields[i].documentKeywords.length; j++){
         for(let k = 0; k<keyValuePairs.length; k++){
-          if(keyValuePairs[k].key.content.includes(fields[i].documentKeywords[j]))
+          let normalized = keyValuePairs[k].key.content.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          let upperCaseKey = normalized.toUpperCase();
+          let upperCaseKeyword = fields[i].documentKeywords[j].toUpperCase();
+          //if(keyValuePairs[k].key.content.includes(fields[i].documentKeywords[j]))
+          if(upperCaseKey.includes(upperCaseKeyword) && keyValuePairs[k].value)
             fields[i].value = keyValuePairs[k].value.content;
         }
       }
