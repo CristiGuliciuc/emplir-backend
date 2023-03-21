@@ -47,20 +47,23 @@ exports.insert = async (req, res) => {
         return res.status(400).json({ sectionIndex: i, msg: "Invalid section content: it cannot be empty nor contain more that 20000 chars" });
     }
 
-    // get current data in the format "YYYY-MM-DD"
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // add padding zero if needed
-    const day = currentDate.getDate().toString().padStart(2, '0'); // add padding zero if needed
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    const dateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
     const newSubmission = {
       type: "submission",
       submissionId: uuidv4(),
       formId: req.query.formId,
-   //   userId: req.userId,
       title,
       dataRetentionPeriod,
-      data: `${year}-${month}-${day}`,
+      data : dateString,
       fields,
       sections,
     };
