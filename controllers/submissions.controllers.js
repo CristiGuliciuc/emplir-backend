@@ -25,7 +25,7 @@ exports.insert = async (req, res) => {
     } = req.body;
 
     // VALIDATIONS
-    if (title < 3 && title > 255)
+    if (title.length < 3 && title.length > 255)
       return res.status(400).json({ msg: "Invalid title: minimum 3 and maximum 255 characters" });
     if (isNaN(dataRetentionPeriod))
       return res.status(400).json({ msg: "Invalid data retention period: should be a number 1-60" });

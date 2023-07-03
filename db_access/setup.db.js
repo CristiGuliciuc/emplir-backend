@@ -13,7 +13,7 @@ const usersContainerPartitionKey = { kind: 'Hash', paths: ['/userId'] }
 const options = {
       endpoint: endpoint,
       key: key,
-      userAgentSuffix: 'emplir-database'
+      userAgentSuffix: 'smartforms'
 };
 
 const client = new CosmosClient(options);
